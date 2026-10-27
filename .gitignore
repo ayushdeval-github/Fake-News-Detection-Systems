@@ -16,15 +16,15 @@ env/
 # 3. Heavy ML Models & Vectorizers
 # ---------------------------------------------------
 
-models/
+# models/
 
-# # Catch-all for model files anywhere in the project
-*.h5
-*.pkl
-*.pt
-*.pth
-*.safetensors
-*.bin
+# # # Catch-all for model files anywhere in the project
+# *.h5
+# *.pkl
+# *.pt
+# *.pth
+# *.safetensors
+# *.bin
 # ---------------------------------------------------
 # 4. Datasets
 # ---------------------------------------------------

@@ -70,7 +70,7 @@ def load_lstm_model() -> dict:
 
 def load_bert_model() -> dict:
     """
-    Load DistilBERT model and tokenizer from the bert_model/ directory.
+    Load DistilBERT model and tokenizer from the bert_model_fp16/ directory.
 
     WHY LAZY / OPTIONAL:
         The BERT model directory can be 250–500 MB.  On free deployment
@@ -81,9 +81,9 @@ def load_bert_model() -> dict:
         DistilBERT = 40 % smaller, 60 % faster, 97 % of BERT accuracy.
         Critical for free-tier deployment (Railway / Render / HF Spaces).
     """
-    bert_dir = _path("bert_model")
+    bert_dir = _path("bert_model_fp16")
     if not os.path.isdir(bert_dir):
-        logger.warning("bert_model/ directory not found — BERT disabled.")
+        logger.warning("bert_model_fp16/ directory not found — BERT disabled.")
         return {}
 
     logger.info("Loading BERT (DistilBERT) model …")

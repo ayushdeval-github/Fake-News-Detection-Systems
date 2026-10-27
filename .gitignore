@@ -1,0 +1,51 @@
+# ---------------------------------------------------
+# 1. API Keys and Secrets (CRITICAL)
+# ---------------------------------------------------
+
+.env
+
+
+# ---------------------------------------------------
+# 2. Virtual Environments (Heavy Libraries)
+# ---------------------------------------------------
+
+venv/
+env/
+
+# ---------------------------------------------------
+# 3. Heavy ML Models & Vectorizers
+# ---------------------------------------------------
+
+models/
+
+# # Catch-all for model files anywhere in the project
+*.h5
+*.pkl
+*.pt
+*.pth
+*.safetensors
+*.bin
+# ---------------------------------------------------
+# 4. Datasets
+# ---------------------------------------------------
+# GitHub has strict file limits. Ignore your raw/fake data.
+data/*.csv
+*.csv
+
+# ---------------------------------------------------
+# 5. Python Caches and Compiled Code
+# ---------------------------------------------------
+# Ignore automatically generated cache folders.
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ---------------------------------------------------
+# 6. IDE / OS System Files
+# ---------------------------------------------------
+.vscode/
+.DS_Store
+
+
+*.pdf
+# Or other large files causing issues

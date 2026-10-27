@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - TruthLens</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-blue: #3B82F6;
+    --primary-hover: #2563EB;
+    --text-dark: #111827;
+    --text-muted: #6B7280;
+    --border-color: #E5E7EB;
+    --bg-left: #FAFAFA;
+    --bg-right: #F3F4F6;
+    --card-bg: #FFFFFF;
+    --success-green: #10B981;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+  }
+
+  /* --- Split Screen Layout --- */
+  .split-layout {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  /* --- Left Panel (Project Info) --- */
+  .left-panel {
+    flex: 1;
+    background-color: var(--bg-left);
+    padding: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    border-right: 1px solid var(--border-color);
+    overflow: hidden;
+  }
+
+  .left-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-radial-gradient(circle at 0 0, transparent 0, var(--bg-left) 40px), repeating-linear-gradient(#f0f0f0, #f0f0f0);
+    opacity: 0.5;
+    z-index: 0;
+  }
+
+  .left-content {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+  }
+
+  .brand-logo-large {
+    width: 48px;
+    height: 48px;
+    background-color: var(--text-dark);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 40px;
+  }
+
+  .project-title {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+    color: var(--text-dark);
+  }
+
+  .typewriter {
+    font-size: 18px;
+    color: var(--primary-blue);
+    font-weight: 600;
+    min-height: 26px;
+    margin-bottom: 40px;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .typewriter::after {
+    content: '';
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    background: var(--primary-blue);
+    margin-left: 6px;
+    animation: blinkCaret 0.8s steps(1) infinite;
+    vertical-align: middle;
+  }
+
+  @keyframes blinkCaret {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  .feature-list {
+    list-style: none;
+    margin-bottom: 60px;
+  }
+
+  .feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    color: var(--text-dark);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  .check-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background-color: var(--success-green);
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+  }
+
+  .author-info {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .author-info span { color: var(--text-dark); }
+
+  /* --- Right Panel (Login Form) --- */
+  .right-panel {
+    flex: 1;
+    background-color: var(--bg-right);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  .login-card {
+    background: var(--card-bg);
+    width: 100%;
+    max-width: 440px;
+    padding: 48px;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+    opacity: 0;
+    transform: translateY(40px);
+    animation: floatUp 0.8s ease-out 0.2s forwards;
+  }
+
+  @keyframes floatUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 40px;
+    color: var(--text-dark);
+  }
+
+  .card-header-icon { color: var(--primary-blue); font-size: 20px; }
+
+  .form-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  .form-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+  }
+
+  .input-group {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .input-label {
+    position: absolute;
+    top: -8px;
+    left: 12px;
+    background: var(--card-bg);
+    padding: 0 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .input-field {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text-dark);
+    outline: none;
+    transition: border-color 0.2s;
+    background: transparent;
+  }
+
+  .input-field:focus { border-color: var(--primary-blue); }
+  .input-group:focus-within .input-label { color: var(--primary-blue); }
+
+  .options-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--text-dark);
+    font-weight: 500;
+  }
+
+  .options-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-bottom: 24px;
+  }
+
+  .submit-btn:hover { background-color: var(--primary-hover); }
+  .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+  .toggle-text {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .toggle-text a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .toggle-text a:hover { text-decoration: underline; }
+
+  .message {
+    padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; display: none; text-align: center;
+  }
+  .message.error { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+  .message.success { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+
+  @media (max-width: 900px) {
+    .split-layout { flex-direction: column; }
+    .left-panel { padding: 40px 20px; border-right: none; border-bottom: 1px solid var(--border-color); }
+    .project-title { font-size: 36px; }
+    .right-panel { padding: 20px; }
+    .login-card { padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="split-layout">
+  
+  <div class="left-panel">
+    <div class="left-content">
+      <div class="brand-logo-large">🔍</div>
+      <h1 class="project-title">Fake News<br>Detection System</h1>
+      <div class="typewriter" id="typewriterText"></div>
+      <ul class="feature-list">
+        <li><span class="check-icon">✓</span> Advanced ML Models (BERT, LSTM, LR)</li>
+        <li><span class="check-icon">✓</span> Real-time confidence scoring</li>
+        <li><span class="check-icon">✓</span> Groq-powered context analysis</li>
+      </ul>
+
+      <div class="author-info">
+        Built by <span>Ayush Deval</span> | NLP Major Project
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="login-card">
+      <div class="card-header">
+        <span class="card-header-icon">❂</span> TruthLens
+      </div>
+
+      <h2 class="form-title" id="formTitle">Sign in</h2>
+      <p class="form-subtitle" id="formSubtitle">Please login to continue to your account.</p>
+
+      <div class="message" id="message"></div>
+
+      <div id="loginForm">
+        <div class="input-group">
+          <label class="input-label">Email</label>
+          <input type="email" id="loginEmail" class="input-field" placeholder="your@email.com" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Password</label>
+          <input type="password" id="loginPassword" class="input-field" placeholder="Enter your password" />
+        </div>
+        
+        <div class="options-row">
+          <input type="checkbox" id="rememberMe">
+          <label for="rememberMe">Keep me logged in</label>
+        </div>
+
+        <button class="submit-btn" id="loginBtn" onclick="handleAuth('login')">Sign in</button>
+      </div>
+
+      <div id="registerForm" style="display:none">
+        <div class="input-group">
+          <label class="input-label">Username</label>
+          <input type="text" id="regUsername" class="input-field" placeholder="Choose a username" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Email</label>
+          <input type="email" id="regEmail" class="input-field" placeholder="your@email.com" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Password</label>
+          <input type="password" id="regPassword" class="input-field" placeholder="Create a password" />
+        </div>
+
+        <button class="submit-btn" id="regBtn" onclick="handleAuth('register')" style="margin-top: 10px;">Create Account</button>
+      </div>
+
+      <div class="toggle-text" id="toggleContainer">
+        Need an account? <a onclick="switchTab('register')">Create one</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  if (localStorage.getItem('auth_token')) { window.location.href = '/'; }
+
+  function switchTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none';
+    document.getElementById('registerForm').style.display = isLogin ? 'none' : 'block';
+    
+    document.getElementById('formTitle').innerText = isLogin ? 'Sign in' : 'Create an account';
+    document.getElementById('formSubtitle').innerText = isLogin 
+      ? 'Please login to continue to your account.' 
+      : 'Fill in the details below to get started.';
+      
+    const toggleContainer = document.getElementById('toggleContainer');
+    if (isLogin) {
+      toggleContainer.innerHTML = 'Need an account? <a onclick="switchTab(\'register\')">Create one</a>';
+    } else {
+      toggleContainer.innerHTML = 'Already have an account? <a onclick="switchTab(\'login\')">Sign in</a>';
+    }
+    document.getElementById('message').style.display = 'none';
+  }
+
+  function showMessage(text, type = 'error') {
+    const el = document.getElementById('message');
+    el.textContent = text;
+    el.className = `message ${type}`;
+    el.style.display = 'block';
+  }
+
+  async function handleAuth(type) {
+    const isLogin = type === 'login';
+    const email = document.getElementById(isLogin ? 'loginEmail' : 'regEmail').value.trim();
+    const password = document.getElementById(isLogin ? 'loginPassword' : 'regPassword').value;
+    const username = isLogin ? null : document.getElementById('regUsername').value.trim();
+    const btn = document.getElementById(isLogin ? 'loginBtn' : 'regBtn');
+
+    if (!email || !password || (!isLogin && !username)) {
+      showMessage('Please fill in all fields.', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    showMessage(isLogin ? 'Authenticating...' : 'Creating account...', 'success');
+
+    const endpoint = isLogin ? '/auth/login' : '/auth/register';
+    const bodyData = isLogin ? { email, password } : { username, email, password };
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyData)
+      });
+      
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        localStorage.setItem('auth_token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));  // ← ADD THIS
+        window.location.href = '/';
+      } else {
+        showMessage(data.error || 'Authentication failed. Please try again.', 'error');
+      }
+    } catch (err) {
+      showMessage('Network error. Is the server running?', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = isLogin ? 'Sign in' : 'Create Account';
+    }
+  }
+
+  function startTypewriter() {
+    const target = document.getElementById('typewriterText');
+    if (!target) return;
+
+    const phrases = [
+      'Next-generation fake news detection.',
+      'AI-powered headline verification.',
+      'Real-time misinformation analysis.',
+      'Trusted news validation for all.'
+    ];
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let deleting = false;
+
+    const tick = () => {
+      const current = phrases[phraseIndex];
+      if (!deleting) {
+        target.textContent = current.slice(0, charIndex + 1);
+        charIndex += 1;
+        if (charIndex === current.length) {
+          deleting = true;
+          setTimeout(tick, 1400);
+          return;
+        }
+      } else {
+        target.textContent = current.slice(0, charIndex - 1);
+        charIndex -= 1;
+        if (charIndex === 0) {
+          deleting = false;
+          phraseIndex = (phraseIndex + 1) % phrases.length;
+        }
+      }
+      setTimeout(tick, deleting ? 40 : 80);
+    };
+
+    tick();
+  }
+
+  document.addEventListener('DOMContentLoaded', startTypewriter);
+</script>
+</body>
+</html>

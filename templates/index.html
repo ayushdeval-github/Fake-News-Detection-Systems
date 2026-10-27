@@ -1,0 +1,2444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TruthLens — Fake News Detection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #3B82F6;
+      --primary-dark: #2563EB;
+      --primary-light: #EFF6FF;
+      --primary-mid: #BFDBFE;
+      --success: #10B981;
+      --success-light: #D1FAE5;
+      --danger: #EF4444;
+      --danger-light: #FEE2E2;
+      --warning: #F59E0B;
+      --warning-light: #FEF3C7;
+      --text: #111827;
+      --text-muted: #6B7280;
+      --text-light: #9CA3AF;
+      --border: #E5E7EB;
+      --border-dark: #D1D5DB;
+      --bg: #F9FAFB;
+      --bg-white: #FFFFFF;
+      --bg-blue: #EFF6FF;
+      --sidebar-w: 260px;
+      --header-h: 64px;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── SIDEBAR ────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--bg-white);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      transition: transform 0.3s;
+    }
+
+    .sidebar-logo {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-mark {
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .logo-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .logo-tag {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 400;
+      margin-top: 1px;
+    }
+
+    .sidebar-nav {
+      padding: 12px 10px;
+      flex: 1;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-light);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 8px 10px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s;
+      margin-bottom: 2px;
+      text-decoration: none;
+    }
+
+    .nav-item:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .nav-item.active {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .nav-icon {
+      font-size: 15px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--primary);
+      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 20px;
+    }
+
+    .sidebar-user {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .user-role {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .logout-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--text-light);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+      border-radius: var(--radius);
+      transition: color 0.15s;
+    }
+
+    .logout-btn:hover {
+      color: var(--danger);
+    }
+
+    /* ── MAIN LAYOUT ───────────────────────── */
+    .main-wrap {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ─────────────────────────────── */
+    .topbar {
+      height: var(--header-h);
+      background: var(--bg-white);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .topbar-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    .topbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: var(--success-light);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #065F46;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    /* ── PAGE CONTENT ───────────────────────── */
+    .page {
+      padding: 28px;
+      flex: 1;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: pageFadeUp 0.7s ease-out 0.1s forwards;
+    }
+
+    @keyframes pageFadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes cardPop {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── STATS ROW ──────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: cardPop 0.7s ease-out forwards;
+    }
+
+    .stats-grid .stat-card:nth-child(1) {
+      animation-delay: 0.18s;
+    }
+
+    .stats-grid .stat-card:nth-child(2) {
+      animation-delay: 0.26s;
+    }
+
+    .stats-grid .stat-card:nth-child(3) {
+      animation-delay: 0.34s;
+    }
+
+    .stats-grid .stat-card:nth-child(4) {
+      animation-delay: 0.42s;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .stat-value.blue {
+      color: var(--primary);
+    }
+
+    .stat-value.green {
+      color: var(--success);
+    }
+
+    .stat-value.red {
+      color: var(--danger);
+    }
+
+    .stat-value.amber {
+      color: var(--warning);
+    }
+
+    .stat-change {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── MAIN GRID ──────────────────────────── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* ── CARD ───────────────────────────────── */
+    .card {
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(24px);
+      animation: cardPop 0.75s ease-out forwards;
+    }
+
+    .content-grid>div:first-child .card {
+      animation-delay: 0.45s;
+    }
+
+    .side-panel>.pipeline-card:first-child {
+      animation-delay: 0.55s;
+    }
+
+    .side-panel>.pipeline-card:last-child {
+      animation-delay: 0.62s;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    /* ── MODEL SELECTOR ─────────────────────── */
+    .model-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .model-tab {
+      flex: 1;
+      padding: 10px 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .model-tab:hover {
+      border-color: var(--primary-mid);
+      background: var(--primary-light);
+    }
+
+    .model-tab.active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+
+    .model-tab-icon {
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .model-tab-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .model-tab.active .model-tab-name {
+      color: var(--primary);
+    }
+
+    .model-tab-tag {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── TEXTAREA ───────────────────────────── */
+    .input-wrap {
+      position: relative;
+      margin-bottom: 14px;
+    }
+
+    .news-textarea {
+      width: 100%;
+      min-height: 140px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      background: var(--bg);
+      line-height: 1.6;
+    }
+
+    .news-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+      background: var(--bg-white);
+    }
+
+    .news-textarea::placeholder {
+      color: var(--text-light);
+    }
+
+    .char-count {
+      position: absolute;
+      bottom: 12px;
+      right: 14px;
+      font-size: 11px;
+      color: var(--text-light);
+    }
+
+    /* ── ANALYZE BUTTON ─────────────────────── */
+    .analyze-btn {
+      width: 100%;
+      padding: 13px 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .analyze-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .analyze-btn:active {
+      transform: translateY(0);
+    }
+
+    .analyze-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── RESULT PANEL ───────────────────────── */
+    .result-panel {
+      margin-top: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: none;
+      animation: fadeUp 0.3s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .result-header.fake {
+      background: var(--danger-light);
+      border-bottom: 1px solid #FECACA;
+    }
+
+    .result-header.real {
+      background: var(--success-light);
+      border-bottom: 1px solid #A7F3D0;
+    }
+
+    .verdict-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .verdict-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .fake .verdict-icon {
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .real .verdict-icon {
+      background: rgba(16, 185, 129, 0.15);
+    }
+
+    .verdict-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .verdict-text {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .fake .verdict-text {
+      color: #DC2626;
+    }
+
+    .real .verdict-text {
+      color: #059669;
+    }
+
+    .conf-badge {
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .fake .conf-badge {
+      background: rgba(239, 68, 68, 0.12);
+      color: #DC2626;
+      border: 1px solid #FECACA;
+    }
+
+    .real .conf-badge {
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+      border: 1px solid #A7F3D0;
+    }
+
+    .result-body {
+      padding: 16px 20px;
+      background: var(--bg-white);
+    }
+
+    /* Confidence bars */
+    .conf-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .conf-bar-label {
+      width: 36px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .conf-bar-track {
+      flex: 1;
+      height: 7px;
+      background: var(--bg);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .conf-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      width: 0;
+      transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .conf-bar-fill.real {
+      background: var(--success);
+    }
+
+    .conf-bar-fill.fake {
+      background: var(--danger);
+    }
+
+    .conf-bar-pct {
+      width: 36px;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Groq box */
+    .groq-box {
+      margin-top: 14px;
+      background: #F5F3FF;
+      border: 1px solid #DDD6FE;
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: none;
+      border-left: 3px solid #7C3AED;
+    }
+
+    .groq-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .groq-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #EDE9FE;
+      color: #6D28D9;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .groq-text {
+      font-size: 13px;
+      color: #4C1D95;
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    .groq-meta {
+      font-size: 10px;
+      color: #7C3AED;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    /* Agreement box */
+    .agreement-box {
+      margin-top: 12px;
+      margin-bottom: 4px;
+      padding: 10px 14px;
+      border-radius: var(--radius-lg);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .agreement-box.agree {
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      color: #15803D;
+    }
+
+    .agreement-box.disagree {
+      background: #F5F3FF;
+      border: 1px solid #DDD6FE;
+      color: #6D28D9;
+    }
+
+    .agreement-box.groq-only {
+      background: #FFF7ED;
+      border: 1px solid #FED7AA;
+      color: #C2410C;
+    }
+
+    /* Details row */
+    .detail-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .detail-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+    }
+
+    .detail-box-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .detail-box-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ── SIDEBAR PANEL (right) ──────────────── */
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Model info cards */
+    .model-info-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .model-info-header {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .model-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .model-dot.lr {
+      background: var(--success);
+    }
+
+    .model-dot.lstm {
+      background: var(--warning);
+    }
+
+    .model-dot.bert {
+      background: var(--primary);
+    }
+
+    .model-info-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .model-info-type {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    .model-info-body {
+      padding: 12px 16px;
+    }
+
+    .model-stat-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .model-stat-key {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .model-stat-val {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .acc-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .acc-fill {
+      height: 100%;
+      border-radius: 2px;
+    }
+
+    .acc-fill.lr {
+      background: var(--success);
+      width: 92%;
+    }
+
+    .acc-fill.lstm {
+      background: var(--warning);
+      width: 99.8%;
+    }
+
+    .acc-fill.bert {
+      background: var(--primary);
+      width: 99.9%;
+    }
+
+    /* Pipeline */
+    .pipeline-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      opacity: 0;
+      transform: translateY(22px);
+      animation: cardPop 0.7s ease-out forwards;
+    }
+
+    .pipeline-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+    }
+
+    .pipeline-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .pipe-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      position: relative;
+    }
+
+    .pipe-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 32px;
+      width: 1px;
+      height: calc(100% - 16px);
+      background: var(--border);
+    }
+
+    .pipe-dot {
+      width: 32px;
+      height: 32px;
+      background: var(--primary-light);
+      border: 1px solid var(--primary-mid);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-bottom: 16px;
+      z-index: 1;
+      position: relative;
+    }
+
+    .pipe-text {
+      padding-top: 4px;
+    }
+
+    .pipe-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .pipe-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    /* ── HISTORY DRAWER ─────────────────────── */
+    .drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 200;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 400px;
+      height: 100vh;
+      background: var(--bg-white);
+      border-left: 1px solid var(--border);
+      z-index: 201;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+
+    .drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .drawer-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .drawer-close {
+      width: 30px;
+      height: 30px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+
+    .drawer-close:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .drawer-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .dstat {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      text-align: center;
+    }
+
+    .dstat-val {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .dstat-val.blue {
+      color: var(--primary);
+    }
+
+    .dstat-val.green {
+      color: var(--success);
+    }
+
+    .dstat-val.red {
+      color: var(--danger);
+    }
+
+    .dstat-key {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px;
+    }
+
+    .history-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .history-item:hover {
+      border-color: var(--primary-mid);
+      background: var(--primary-light);
+    }
+
+    .history-item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .history-verdict {
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .history-verdict.fake {
+      color: var(--danger);
+    }
+
+    .history-verdict.real {
+      color: var(--success);
+    }
+
+    .history-model {
+      font-size: 10px;
+      color: var(--text-muted);
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .history-text {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+
+    .history-time {
+      font-size: 10px;
+      color: var(--text-light);
+    }
+
+    /* ── TOAST ──────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--text);
+      color: white;
+      padding: 12px 18px;
+      border-radius: var(--radius-lg);
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 999;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all 0.25s;
+      box-shadow: var(--shadow-md);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── RESPONSIVE ─────────────────────────── */
+    @media (max-width: 1100px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        display: none;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-wrap {
+        margin-left: 0;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 500px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page {
+        padding: 16px;
+      }
+
+      .drawer {
+        width: 100%;
+      }
+    }
+
+    /* ── EMPTY STATE ────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .empty-text {
+      font-size: 13px;
+    }
+
+    /* ── SECTION LABEL ──────────────────────── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── EXAMPLE CHIPS ──────────────────────── */
+    .example-chip {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .fake-chip {
+      background: var(--danger-light);
+      border-color: #FECACA;
+      color: #DC2626;
+    }
+
+    .fake-chip:hover {
+      background: #FEE2E2;
+      border-color: var(--danger);
+      transform: translateY(-1px);
+    }
+
+    .real-chip {
+      background: var(--success-light);
+      border-color: #A7F3D0;
+      color: #059669;
+    }
+
+    .real-chip:hover {
+      background: #D1FAE5;
+      border-color: var(--success);
+      transform: translateY(-1px);
+    }
+
+    /* ── ABOUT MODAL ────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-white);
+      border-radius: var(--radius-xl);
+      width: 680px;
+      max-width: 95vw;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+      animation: fadeUp 0.25s ease;
+    }
+
+    .modal-header {
+      padding: 24px 28px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      background: var(--bg-white);
+      z-index: 1;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+
+    .modal-close:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .modal-body {
+      padding: 24px 28px 28px;
+    }
+
+    .about-hero {
+      background: linear-gradient(135deg, #EFF6FF 0%, #F5F3FF 100%);
+      border: 1px solid var(--primary-mid);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px;
+      margin-bottom: 22px;
+    }
+
+    .about-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+
+    .about-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.4px;
+      margin-bottom: 6px;
+    }
+
+    .about-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .about-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin: 20px 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .about-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .about-para {
+      font-size: 13px;
+      color: #374151;
+      line-height: 1.75;
+      margin-bottom: 12px;
+    }
+
+    .about-tech-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .tech-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+    }
+
+    .tech-card-icon {
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .tech-card-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .tech-card-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .about-metric-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .metric-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      text-align: center;
+    }
+
+    .metric-val {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .metric-val.blue {
+      color: var(--primary);
+    }
+
+    .metric-val.green {
+      color: var(--success);
+    }
+
+    .metric-val.amber {
+      color: var(--warning);
+    }
+
+    .metric-key {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .about-footer {
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .about-author {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .about-author strong {
+      color: var(--text);
+    }
+
+    .about-badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .about-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid;
+    }
+
+    .about-badge.blue {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: var(--primary-mid);
+    }
+
+    .about-badge.green {
+      background: var(--success-light);
+      color: #065F46;
+      border-color: #A7F3D0;
+    }
+
+    .about-badge.purple {
+      background: #F5F3FF;
+      color: #6D28D9;
+      border-color: #DDD6FE;
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">TL</div>
+      <div>
+        <div class="logo-name">TruthLens</div>
+        <div class="logo-tag">Fake News Detection</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Main</div>
+      <div class="nav-item active">
+        <span class="nav-icon">🔍</span> Analyze News
+      </div>
+      <div class="nav-item" onclick="openDrawer()">
+        <span class="nav-icon">📋</span> Search History
+        <span class="nav-badge" id="historyCount">0</span>
+      </div>
+
+      <div class="nav-label" style="margin-top:12px;">Models</div>
+      <div class="nav-item">
+        <span class="nav-icon">📊</span> Logistic Regression
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">🧠</span> LSTM Network
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">🤖</span> BERT Transformer
+      </div>
+
+      <div class="nav-label" style="margin-top:12px;">Info</div>
+      <div class="nav-item" onclick="openAbout()">
+        <span class="nav-icon">ℹ️</span> About Project
+      </div>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatar">A</div>
+      <div>
+        <div class="user-name" id="sidebarUsername">User</div>
+        <div class="user-role">Researcher</div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()" title="Logout">⇥</button>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+
+    <header class="topbar">
+      <div>
+        <span class="topbar-title">News Analyzer</span>
+        <span class="topbar-sub">— Detect misinformation with AI</span>
+      </div>
+      <div class="topbar-right">
+        <div class="status-pill">
+          <div class="status-dot"></div>
+          All Models Online
+        </div>
+        <div style="font-size:13px;color:var(--text-muted);">NLP Major Project</div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Searches</div>
+          <div class="stat-value blue" id="statTotal">0</div>
+          <div class="stat-change">Your session activity</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Fake Detected</div>
+          <div class="stat-value red" id="statFake">0</div>
+          <div class="stat-change">Misinformation found</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Real News</div>
+          <div class="stat-value green" id="statReal">0</div>
+          <div class="stat-change">Verified as credible</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Best Model</div>
+          <div class="stat-value amber">99.9%</div>
+          <div class="stat-change">Full BERT accuracy</div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                🔍 News Analyzer
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);font-weight:500;">
+                Powered by LR · LSTM · BERT · Groq llama-3.3-70b-versatile
+              </div>
+            </div>
+            <div class="card-body">
+
+              <div class="section-label">Select Model</div>
+              <div class="model-tabs">
+                <div class="model-tab active" onclick="selectModel(this,'lr')">
+                  <div class="model-tab-icon">📊</div>
+                  <div class="model-tab-name">Logistic Regression</div>
+                  <div class="model-tab-tag">Fast · TF-IDF</div>
+                </div>
+                <div class="model-tab" onclick="selectModel(this,'lstm')">
+                  <div class="model-tab-icon">🧠</div>
+                  <div class="model-tab-name">LSTM Neural Net</div>
+                  <div class="model-tab-tag">Deep · Sequential</div>
+                </div>
+                <div class="model-tab" onclick="selectModel(this,'bert')">
+                  <div class="model-tab-icon">🤖</div>
+                  <div class="model-tab-name">BERT Transformer</div>
+                  <div class="model-tab-tag">Best Accuracy</div>
+                </div>
+              </div>
+
+              <div class="section-label" style="margin-top:16px;">Paste News Text</div>
+              <div class="input-wrap">
+                <textarea class="news-textarea" id="newsInput"
+                  placeholder="Paste any news headline or article here…&#10;&#10;Example: 'Scientists discover that eating chocolate daily increases IQ by 30 points according to a recent Harvard study.'"></textarea>
+                <span class="char-count" id="charCount">0 chars</span>
+              </div>
+
+              <!-- ── EXAMPLE NEWS CHIPS ─────────────────── -->
+              <div class="section-label" style="margin-bottom:8px;">Try an Example</div>
+              <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;" id="exampleChips">
+                <button class="example-chip fake-chip" onclick="loadExample(0)">🔴 Fake: Aliens landed in Delhi</button>
+                <button class="example-chip fake-chip" onclick="loadExample(1)">🔴 Fake: Earth is flat — NASA
+                  confirms</button>
+                <button class="example-chip fake-chip" onclick="loadExample(2)">🔴 Fake: Chocolate boosts IQ by 30
+                  points</button>
+                <button class="example-chip real-chip" onclick="loadExample(3)">🟢 Real: Supreme Court upholds
+                  amendment</button>
+                <button class="example-chip fake-chip" onclick="loadExample(4)">🔴 Fake: Drinking bleach cures
+                  COVID-19</button>
+                <button class="example-chip real-chip" onclick="loadExample(5)">🟢 Real: ISRO successfully launched
+                  satellite</button>
+              </div>
+
+              <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">
+                <span class="spinner" id="spinner"></span>
+                <span id="btnText">Analyze News</span>
+              </button>
+
+              <div class="result-panel" id="resultPanel">
+                <div class="result-header" id="resultHeader">
+                  <div class="verdict-row">
+                    <div class="verdict-icon" id="verdictIcon"></div>
+                    <div>
+                      <div class="verdict-label">Verdict</div>
+                      <div class="verdict-text" id="verdictText"></div>
+                    </div>
+                  </div>
+                  <div class="conf-badge" id="confBadge"></div>
+                </div>
+                <div class="result-body">
+
+                  <!-- CONFIDENCE SCORE BARS -->
+                  <div class="section-label" style="margin-bottom:10px;">Confidence Score</div>
+                  <div class="conf-bar-row">
+                    <span class="conf-bar-label" style="color:var(--success);">REAL</span>
+                    <div class="conf-bar-track">
+                      <div class="conf-bar-fill real" id="barReal" style="width:0%"></div>
+                    </div>
+                    <span class="conf-bar-pct" id="pctReal" style="color:var(--success);">0%</span>
+                  </div>
+                  <div class="conf-bar-row">
+                    <span class="conf-bar-label" style="color:var(--danger);">FAKE</span>
+                    <div class="conf-bar-track">
+                      <div class="conf-bar-fill fake" id="barFake" style="width:0%"></div>
+                    </div>
+                    <span class="conf-bar-pct" id="pctFake" style="color:var(--danger);">0%</span>
+                  </div>
+
+
+                  <!-- GROQ EXPLANATION -->
+                  <div class="groq-box" id="groqBox">
+                    <div class="groq-header">
+                      <span class="groq-badge">🤖 Groq Explanation</span>
+                    </div>
+                    <div class="groq-text" id="groqExplanation"></div>
+                    <div class="groq-meta" id="groqConfidence"></div>
+                  </div>
+
+                  <!-- DETAIL ROW: Model | Time | Verdict -->
+                  <div class="detail-row">
+                    <div class="detail-box">
+                      <div class="detail-box-label">Model Used</div>
+                      <div class="detail-box-value" id="detModel">—</div>
+                    </div>
+                    <div class="detail-box">
+                      <div class="detail-box-label">Response Time</div>
+                      <div class="detail-box-value" id="detTime">—</div>
+                    </div>
+                    <div class="detail-box" id="verdictBox">
+                      <div class="detail-box-label">Verdict</div>
+                      <div class="detail-box-value" id="detVerdict">—</div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="side-panel">
+
+          <div class="pipeline-card">
+            <div class="pipeline-title">Model Performance</div>
+
+            <div class="model-info-card" style="margin-bottom:8px;">
+              <div class="model-info-header">
+                <div class="model-dot lr"></div>
+                <div class="model-info-name">Logistic Regression</div>
+                <div class="model-info-type">TF-IDF · .pkl</div>
+              </div>
+              <div class="model-info-body">
+                <div class="model-stat-row">
+                  <span class="model-stat-key">Accuracy</span>
+                  <span class="model-stat-val" style="color:var(--success)">92.0%</span>
+                </div>
+                <div class="model-stat-row">
+                  <span class="model-stat-key">Latency</span>
+                  <span class="model-stat-val">&lt; 50ms</span>
+                </div>
+                <div class="acc-bar">
+                  <div class="acc-fill lr"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="model-info-card" style="margin-bottom:8px;">
+              <div class="model-info-header">
+                <div class="model-dot lstm"></div>
+                <div class="model-info-name">LSTM Network</div>
+                <div class="model-info-type">BiLSTM · .h5</div>
+              </div>
+              <div class="model-info-body">
+                <div class="model-stat-row">
+                  <span class="model-stat-key">Accuracy</span>
+                  <span class="model-stat-val" style="color:var(--warning)">99.86%</span>
+                </div>
+                <div class="model-stat-row">
+                  <span class="model-stat-key">Latency</span>
+                  <span class="model-stat-val">~ 200ms</span>
+                </div>
+                <div class="acc-bar">
+                  <div class="acc-fill lstm"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="model-info-card">
+              <div class="model-info-header">
+                <div class="model-dot bert"></div>
+                <div class="model-info-name">Full BERT</div>
+                <div class="model-info-type">Transformer · .bin</div>
+              </div>
+              <div class="model-info-body">
+                <div class="model-stat-row">
+                  <span class="model-stat-key">Accuracy</span>
+                  <span class="model-stat-val" style="color:var(--primary)">99.96%</span>
+                </div>
+                <div class="model-stat-row">
+                  <span class="model-stat-key">Latency</span>
+                  <span class="model-stat-val">~ 2s</span>
+                </div>
+                <div class="acc-bar">
+                  <div class="acc-fill bert"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pipeline-card">
+            <div class="pipeline-title">Detection Pipeline</div>
+            <div class="pipeline-steps">
+              <div class="pipe-step">
+                <div class="pipe-dot">📝</div>
+                <div class="pipe-text">
+                  <div class="pipe-name">Input Text</div>
+                  <div class="pipe-desc">User pastes news article</div>
+                </div>
+              </div>
+              <div class="pipe-step">
+                <div class="pipe-dot">🧹</div>
+                <div class="pipe-text">
+                  <div class="pipe-name">Preprocess</div>
+                  <div class="pipe-desc">Clean · Tokenize · Normalize</div>
+                </div>
+              </div>
+              <div class="pipe-step">
+                <div class="pipe-dot">⚙️</div>
+                <div class="pipe-text">
+                  <div class="pipe-name">ML Inference</div>
+                  <div class="pipe-desc">LR / LSTM / BERT model</div>
+                </div>
+              </div>
+              <div class="pipe-step">
+                <div class="pipe-dot">🤖</div>
+                <div class="pipe-text">
+                  <div class="pipe-name">Groq AI Check</div>
+                  <div class="pipe-desc">LLaMA 3 70B explanation</div>
+                </div>
+              </div>
+              <div class="pipe-step">
+                <div class="pipe-dot">📊</div>
+                <div class="pipe-text">
+                  <div class="pipe-name">Final Verdict</div>
+                  <div class="pipe-desc">Fake / Real + confidence</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="historyDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title">Search History</div>
+      <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    </div>
+    <div class="drawer-stats">
+      <div class="dstat">
+        <div class="dstat-val blue" id="dTotal">0</div>
+        <div class="dstat-key">Total</div>
+      </div>
+      <div class="dstat">
+        <div class="dstat-val red" id="dFake">0</div>
+        <div class="dstat-key">Fake</div>
+      </div>
+      <div class="dstat">
+        <div class="dstat-val green" id="dReal">0</div>
+        <div class="dstat-key">Real</div>
+      </div>
+    </div>
+    <div style="padding: 10px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px;">
+      <button onclick="deleteAllHistory()"
+        style="flex: 1; padding: 8px; background: var(--danger-light); border: 1px solid #FECACA; border-radius: var(--radius); color: var(--danger); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s;">🗑️
+        Clear All</button>
+    </div>
+    <div class="drawer-body" id="historyList">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">No searches yet.<br>Start analyzing news!</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- ── ABOUT MODAL ──────────────────────────────────────────── -->
+  <div class="modal-overlay" id="aboutModal" onclick="closeAbout(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <div
+            style="font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:0.6px;text-transform:uppercase;margin-bottom:4px;">
+            NLP Major Project</div>
+          <div style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.3px;">TruthLens — Fake News
+            Detection System</div>
+        </div>
+        <button class="modal-close" onclick="closeAbout()">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="about-hero">
+          <div class="about-tag">🔬 AI-Powered Research Project</div>
+          <div class="about-title">Combating Misinformation with Machine Learning</div>
+          <div class="about-subtitle">
+            TruthLens is an end-to-end fake news detection platform that combines classical machine learning,
+            deep learning, and large language models to identify misinformation in real time — with a focus on
+            both international and Indian regional news.
+          </div>
+        </div>
+
+        <div class="about-section-title">📌 Project Overview</div>
+        <p class="about-para">
+          The rapid spread of misinformation across digital platforms poses a significant threat to public discourse,
+          democratic processes, and societal trust. TruthLens addresses this challenge by deploying a multi-model
+          AI pipeline that analyzes news text and delivers a verdict — <strong>Real</strong> or <strong>Fake</strong> —
+          along with a confidence score and a natural-language explanation.
+        </p>
+        <p class="about-para">
+          The system is trained on the <strong>ISOT Fake News Dataset</strong> (44,898 articles from Reuters and
+          PolitiFact), augmented with <strong>3.8 million real Indian headlines</strong> from the Times of India
+          corpus and a curated set of 227 state- and city-level Indian news samples — making it one of the few
+          fake news detectors with strong coverage of Indian regional content.
+        </p>
+
+        <div class="about-section-title">⚙️ Technical Architecture</div>
+        <div class="about-tech-grid">
+          <div class="tech-card">
+            <div class="tech-card-icon">📊</div>
+            <div class="tech-card-name">Logistic Regression</div>
+            <div class="tech-card-desc">TF-IDF vectorization with MaxAbsScaler. Fastest inference (&lt;50ms). Calibrated
+              threshold for domain-shifted text.</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-card-icon">🧠</div>
+            <div class="tech-card-name">LSTM Neural Network</div>
+            <div class="tech-card-desc">Bidirectional LSTM with Embedding layer, SpatialDropout, and Dense(2, softmax)
+              output. Trained with EarlyStopping.</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-card-icon">🤖</div>
+            <div class="tech-card-name">BERT Transformer</div>
+            <div class="tech-card-desc">Full bert-base-uncased fine-tuned for sequence classification. Bidirectional
+              context understanding. Highest accuracy.</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-card-icon">💬</div>
+            <div class="tech-card-name">Groq llama-3.3-70b-versatile</div>
+            <div class="tech-card-desc">LLaMA-3.3-70B-Versatile via Groq API. Provides human-readable explanation and
+              cross-validates the ML verdict.</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-card-icon">🗄️</div>
+            <div class="tech-card-name">Flask + MongoDB</div>
+            <div class="tech-card-desc">RESTful API backend with JWT authentication. MongoDB Atlas stores user accounts
+              and full search history.</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-card-icon">🧹</div>
+            <div class="tech-card-name">NLP Preprocessing</div>
+            <div class="tech-card-desc">Dateline removal, stop-word filtering, lemmatization, and domain-specific
+              augmentation for Indian news coverage.</div>
+          </div>
+        </div>
+
+        <div class="about-section-title">📈 Model Performance</div>
+        <div class="about-metric-row">
+          <div class="metric-box">
+            <div class="metric-val blue">92%</div>
+            <div class="metric-key">Logistic Regression</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val amber">99.86%</div>
+            <div class="metric-key">LSTM Network</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val green">99.96%</div>
+            <div class="metric-key">BERT Transformer</div>
+          </div>
+        </div>
+
+        <div class="about-section-title">� How It Works</div>
+        <p class="about-para">
+          When a user submits a news article, the text is first preprocessed — HTML tags, URLs, and Reuters
+          datelines are stripped, stop words are removed, and tokens are lemmatized. The cleaned text is then
+          passed to the selected ML model (LR, LSTM, or BERT) which outputs a probability score. Simultaneously,
+          the raw text is sent to Groq's llama-3.3-70b-versatile API for a contextual explanation. The final verdict
+          combines both signals: if they agree, confidence is boosted; if they disagree, the Groq verdict takes
+          precedence as it has broader world knowledge.
+        </p>
+
+        <div class="about-footer">
+          <div class="about-author">
+            Developed by <strong>Ayush Deval</strong> · B.Tech CSE
+          </div>
+          <div class="about-badges">
+            <span class="about-badge blue">Python · Flask</span>
+            <span class="about-badge green">scikit-learn · TensorFlow</span>
+            <span class="about-badge purple">HuggingFace · Groq</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── STATE ────────────────────────────────────
+    let currentSelectedModel = 'lr';
+    const modelNames = { lr: 'Logistic Regression', lstm: 'LSTM Network', bert: 'BERT Transformer' };
+
+    // ── AUTH CHECK ───────────────────────────────
+    function checkAuth() {
+      const token = localStorage.getItem('auth_token');
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+      if (!token || !user) {
+        window.location.href = '/login';
+        return;
+      }
+
+      const name = user.username || 'User';
+      document.getElementById('sidebarUsername').textContent = name;
+      document.getElementById('userAvatar').textContent = name[0].toUpperCase();
+      loadStats();
+    }
+
+    function handleLogout() {
+      fetch('/auth/logout', { method: 'POST' }).catch(() => { });
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+
+    // ── STATS ────────────────────────────────────
+    async function loadStats() {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      try {
+        const res = await fetch('/history', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (!data.success) return;
+        const s = data.stats;
+
+        const updateEl = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = val;
+        };
+
+        updateEl('statTotal', s.total_searches);
+        updateEl('statFake', s.fake_detected);
+        updateEl('statReal', s.real_detected);
+        updateEl('historyCount', s.total_searches);
+        updateEl('dTotal', s.total_searches);
+        updateEl('dFake', s.fake_detected);
+        updateEl('dReal', s.real_detected);
+
+        renderHistory(data.history);
+      } catch (e) {
+        console.log("Stats fetch skipped (No server connection).");
+      }
+    }
+
+    // ── MODEL SELECT ─────────────────────────────
+    function selectModel(el, model) {
+      document.querySelectorAll('.model-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      currentSelectedModel = model;
+    }
+
+    // ── CHAR COUNT ───────────────────────────────
+    document.getElementById('newsInput').addEventListener('input', function () {
+      document.getElementById('charCount').textContent = this.value.length + ' chars';
+    });
+
+    // ── ANALYZE ──────────────────────────────────
+    async function analyze() {
+      const text = document.getElementById('newsInput').value.trim();
+      if (!text || text.length < 10) { showToast('Please enter at least 10 characters'); return; }
+
+      const btn = document.getElementById('analyzeBtn');
+      const spinner = document.getElementById('spinner');
+      const btnText = document.getElementById('btnText');
+
+      btn.disabled = true;
+      spinner.style.display = 'inline-block';
+      btnText.textContent = 'Analyzing…';
+      document.getElementById('resultPanel').style.display = 'none';
+      document.getElementById('groqBox').style.display = 'none';
+      document.getElementById('barReal').style.width = '0%';
+      document.getElementById('barFake').style.width = '0%';
+
+
+      const token = localStorage.getItem('auth_token') || '';
+      let result;
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        const resp = await fetch('/predict', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+          },
+          body: JSON.stringify({ text, model: currentSelectedModel }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (resp.ok) {
+          result = await resp.json();
+        } else if (resp.status === 401) {
+          window.location.href = '/login';
+          return;
+        } else {
+          throw new Error('API server error');
+        }
+      } catch (e) {
+        console.warn("API Request failed. Using Local Fallback Engine.");
+        await new Promise(r => setTimeout(r, 800)); // Simulate thinking
+        result = localDetect(text);
+      }
+
+      showResult(result);
+      loadStats();
+
+      btn.disabled = false;
+      spinner.style.display = 'none';
+      btnText.textContent = 'Analyze News';
+    }
+
+    // ── SHOW RESULT ──────────────────────────────
+    function showResult(r) {
+      const finalVerdict = r.final_verdict || 'Real';
+      const isFake = finalVerdict === 'Fake';
+      const mlConfidence = Number.isFinite(Number(r.ml_confidence)) ? Number(r.ml_confidence) : Number(r.final_confidence || 50);
+      const modelDisplay = modelNames[currentSelectedModel] || r.model_used || '—';
+
+      const header = document.getElementById('resultHeader');
+      const panel = document.getElementById('resultPanel');
+
+      // ── Header ──────────────────────────────────
+      header.className = 'result-header ' + (isFake ? 'fake' : 'real');
+      document.getElementById('verdictIcon').textContent = isFake ? '⚠️' : '✅';
+      document.getElementById('verdictText').textContent = isFake ? 'Fake News' : 'Real News';
+      document.getElementById('confBadge').textContent = r.final_confidence + '% Confidence';
+
+      // ── Confidence Score Bars ────────────────────
+      // Real bar = 100 - fake confidence when fake, or final_confidence when real
+      const realPct = isFake ? (100 - Number(r.final_confidence || 50)) : Number(r.final_confidence || 50);
+      const fakePct = 100 - realPct;
+
+      setTimeout(() => {
+        document.getElementById('barReal').style.width = realPct + '%';
+        document.getElementById('barFake').style.width = fakePct + '%';
+      }, 80);
+
+      document.getElementById('pctReal').textContent = realPct + '%';
+      document.getElementById('pctFake').textContent = fakePct + '%';
+
+
+      // ── Groq Explanation ─────────────────────────
+      const groqExplanation = r.groq_explanation || 'No Groq explanation available.';
+      const groqMeta = r.groq_confidence ? 'Groq Confidence: ' + r.groq_confidence : '';
+      document.getElementById('groqExplanation').textContent = groqExplanation;
+      document.getElementById('groqConfidence').textContent = groqMeta;
+      document.getElementById('groqBox').style.display = 'block';
+
+      // ── Detail Row ───────────────────────────────
+      document.getElementById('detModel').textContent = modelDisplay;
+      document.getElementById('detTime').textContent = r.time_ms ? r.time_ms + 'ms' : '—';
+
+      // Verdict box — colored
+      const detVerdict = document.getElementById('detVerdict');
+      detVerdict.textContent = finalVerdict + ' News';
+      detVerdict.style.color = isFake ? 'var(--danger)' : 'var(--success)';
+
+      panel.style.display = 'block';
+    }
+
+    // ── LOCAL FALLBACK ENGINE ────────────────────
+    function localDetect(text) {
+      const lower = text.toLowerCase();
+      let score = 0;
+
+      // Pattern detection logic
+      const fakeSigs = [/\bshocking\b/i, /\bexclusive\b/i, /!!!/, /miracle cure/i, /deep state/i, /you won't believe/i, /scientists confirm/i];
+      const realSigs = [/according to/i, /official statement/i, /press release/i, /government announced/i, /ministry of/i];
+
+      fakeSigs.forEach(p => { if (p.test(lower)) score += 0.2; });
+      realSigs.forEach(p => { if (p.test(lower)) score -= 0.15; });
+
+      const finalScore = Math.min(Math.max(0.5 + score, 0.01), 0.99);
+      const isFake = finalScore >= 0.5;
+
+      return {
+        final_verdict: isFake ? 'Fake' : 'Real',
+        final_confidence: Math.round((isFake ? finalScore : 1 - finalScore) * 100),
+        verdict_source: 'Local Heuristic Engine',
+        groq_explanation: 'Analysis performed via local pattern matching. Connect to server for AI-driven explanation.',
+        groq_verdict: 'Offline'
+      };
+    }
+
+    // ── HISTORY DRAWER ───────────────────────────
+    function openDrawer() {
+      document.getElementById('historyDrawer').classList.add('open');
+      document.getElementById('drawerOverlay').style.display = 'block';
+      loadStats();
+    }
+
+    function closeDrawer() {
+      document.getElementById('historyDrawer').classList.remove('open');
+      document.getElementById('drawerOverlay').style.display = 'none';
+    }
+
+    function renderHistory(history) {
+      const el = document.getElementById('historyList');
+      if (!history || !history.length) {
+        el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No searches yet.<br>Start analyzing news!</div></div>';
+        return;
+      }
+
+      el.innerHTML = history.map(h => {
+        const textSnippet = (h.news_text || '');
+        const safeText = textSnippet.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return `
+    <div class="history-item">
+      <div style="flex: 1; cursor: pointer;" onclick="useHistory('${safeText}')">
+        <div class="history-item-top">
+          <div class="history-verdict ${h.final_verdict === 'Fake' ? 'fake' : 'real'}">
+            ${h.final_verdict === 'Fake' ? '⚠️ Fake' : '✅ Real'} · ${h.final_confidence}%
+          </div>
+          <div class="history-model">${h.model_used || '—'}</div>
+        </div>
+        <div class="history-text">${textSnippet.substring(0, 100)}${textSnippet.length > 100 ? '...' : ''}</div>
+        <div class="history-time">${h.timestamp || ''}</div>
+      </div>
+      <button onclick="deleteHistoryItem('${h.search_id}')" style="padding: 4px 8px; border: none; background: none; color: var(--text-light); cursor: pointer; font-size: 14px; border-radius: var(--radius); transition: all 0.15s;" onmouseover="this.style.background='var(--danger-light)'; this.style.color='var(--danger)'" onmouseout="this.style.background='none'; this.style.color='var(--text-light)'">🗑️</button>
+    </div>
+  `}).join('');
+    }
+
+    function useHistory(text) {
+      document.getElementById('newsInput').value = text;
+      document.getElementById('charCount').textContent = text.length + ' chars';
+      closeDrawer();
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ── DELETE OPERATIONS ────────────────────────
+    async function deleteHistoryItem(searchId) {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        showToast('Please login to delete history');
+        return;
+      }
+
+      if (!confirm('Delete this search from history?')) return;
+
+      try {
+        const resp = await fetch('/history/delete', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ search_id: searchId })
+        });
+
+        if (resp.ok) {
+          showToast('Search deleted');
+          loadStats(); // Reload history
+        } else {
+          showToast('Failed to delete search');
+        }
+      } catch (e) {
+        showToast('Error deleting search');
+        console.error(e);
+      }
+    }
+
+    async function deleteAllHistory() {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        showToast('Please login to delete history');
+        return;
+      }
+
+      if (!confirm('⚠️ Delete ALL search history? This cannot be undone.')) return;
+
+      try {
+        const resp = await fetch('/history/delete-all', {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await resp.json();
+        if (resp.ok) {
+          showToast(`Deleted ${data.deleted_count} searches`);
+          loadStats(); // Reload history
+        } else {
+          showToast(data.error || 'Failed to delete history');
+        }
+      } catch (e) {
+        showToast('Error deleting history');
+        console.error(e);
+      }
+    }
+
+    // ── INIT ─────────────────────────────────────
+    checkAuth();
+
+    // ── EXAMPLE NEWS ─────────────────────────────
+    const EXAMPLES = [
+      // FAKE examples
+      "Aliens have landed in Delhi's Connaught Place and the Indian government is hiding the truth from the public. Multiple eyewitnesses reported seeing UFOs hovering over the capital last night.",
+      "SHOCKING: Scientists from NASA have officially confirmed that the Earth is completely flat. The space agency has been hiding this truth for decades to protect the space exploration industry.",
+      "Harvard University researchers have discovered that eating dark chocolate every day for 30 days increases human IQ by 30 points. The study involved 10,000 participants across 15 countries.",
+      // REAL examples
+      "The Supreme Court of India upheld the constitutional amendment on reservation policy, ruling that the 10 percent EWS quota does not violate the basic structure of the Constitution.",
+      // More FAKE
+      "Doctors are warning that drinking diluted bleach solution can cure COVID-19 and boost immunity. A viral WhatsApp message claims this remedy has been suppressed by pharmaceutical companies.",
+      // More REAL
+      "The Indian Space Research Organisation successfully launched the PSLV-C58 mission carrying the XPoSat satellite, making India only the second country in the world to place an X-ray polarimetry observatory in orbit.",
+    ];
+
+    function loadExample(index) {
+      const textarea = document.getElementById('newsInput');
+      textarea.value = EXAMPLES[index];
+      document.getElementById('charCount').textContent = EXAMPLES[index].length + ' chars';
+      textarea.focus();
+      textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Highlight the active chip
+      document.querySelectorAll('.example-chip').forEach((c, i) => {
+        c.style.opacity = i === index ? '1' : '0.6';
+        c.style.transform = i === index ? 'translateY(-2px)' : '';
+      });
+      setTimeout(() => {
+        document.querySelectorAll('.example-chip').forEach(c => {
+          c.style.opacity = '1';
+          c.style.transform = '';
+        });
+      }, 1200);
+    }
+
+    // ── ABOUT MODAL ──────────────────────────────
+    function openAbout() {
+      document.getElementById('aboutModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAbout(e) {
+      if (e && e.target !== document.getElementById('aboutModal')) return;
+      document.getElementById('aboutModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeAbout();
+    });
+  </script>
+</body>
+
+</html>
